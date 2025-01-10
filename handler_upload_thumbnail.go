@@ -5,8 +5,7 @@ import (
 	"mime"
 	"net/http"
 	"os"
-	"crypto/rand"
-	"encoding/base64"
+
 	"github.com/bootdotdev/learn-file-storage-s3-golang-starter/internal/auth"
 	"github.com/google/uuid"
 )
@@ -50,16 +49,8 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 		respondWithError(w, http.StatusBadRequest, "Invalid file type", nil)
 		return
 	}
-	randKey := make([]byte,10)
-	_,err = rand.Read(randKey)
-	if err != nil{
-		respondWithError(w, http.StatusInternalServerError,"unable to create file path",err)
-	}
-	var URLencoded = base64.URLEncoding
 
-	newKey := URLencoded.EncodeToString(randKey)
-
-	assetPath := getAssetPath(newKey, mediaType)
+	assetPath := getAssetPath(mediaType)
 	assetDiskPath := cfg.getAssetDiskPath(assetPath)
 
 	dst, err := os.Create(assetDiskPath)
