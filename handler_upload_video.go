@@ -12,9 +12,11 @@ import (
 	"os/exec"
 	"path/filepath"
 
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/bootdotdev/learn-file-storage-s3-golang-starter/internal/auth"
+	
 	"github.com/google/uuid"
 )
 
@@ -122,7 +124,7 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 	_, err = cfg.s3Client.PutObject(r.Context(), &s3.PutObjectInput{
 		Bucket:      aws.String(cfg.s3Bucket),
 		Key:         aws.String(key),
-		Body:        processedFile,
+		Body:        tempFile,
 		ContentType: aws.String(mediaType),
 	})
 	if err != nil {
@@ -130,13 +132,14 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	url := cfg.getObjectURL(key)
+	url := fmt.Sprintf("%s/%s", cfg.s3CfDistribution, key)
 	video.VideoURL = &url
 	err = cfg.db.UpdateVideo(video)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't update video", err)
 		return
 	}
+
 
 	respondWithJSON(w, http.StatusOK, video)
 }
@@ -202,3 +205,5 @@ func processVideoForFastStart(inputFilePath string) (string, error) {
 
 	return processedFilePath, nil
 }
+
+
